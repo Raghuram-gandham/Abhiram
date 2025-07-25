@@ -1,65 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Digit Root Calculator</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 100px;
-        }
-        input, button {
-            padding: 10px;
-            margin: 10px;
-        }
-        #result, #steps {
-            margin-top: 20px;
-            font-size: 18px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Digit Root Calculator - Abhiram</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background: #f4f4f4;
+      color: #333;
+      max-width: 600px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+    }
+    input[type="number"] {
+      width: 100%;
+      padding: 0.5rem;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+    button {
+      padding: 0.6rem 1rem;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .result {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: white;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    .error {
+      color: red;
+    }
+  </style>
 </head>
 <body>
-    <h1>Digit Root Calculator</h1>
-    <input type="number" id="numberInput" placeholder="Enter a number (0 - 9999)" />
-    <button onclick="calculate()">Calculate</button>
-    
-    <div id="result"></div>
-    <div id="steps"></div>
+  <h1>Digit Root Calculator</h1>
+  <input type="number" id="numberInput" placeholder="Enter a number (max: 9999)" max="9999" />
+  <button onclick="calculate()">Calculate</button>
+  <div class="result" id="resultBox"></div>
 
-    <script>
-        async function calculate() {
-            const number = parseInt(document.getElementById("numberInput").value);
-            const resultDiv = document.getElementById("result");
-            const stepsDiv = document.getElementById("steps");
+  <script>
+    async function calculate() {
+      const input = document.getElementById('numberInput').value;
+      const resultBox = document.getElementById('resultBox');
+      resultBox.innerHTML = "Calculating...";
 
-            resultDiv.innerText = "";
-            stepsDiv.innerText = "";
+      try {
+        const res = await fetch('https://abhiram-38oh.onrender.com/digitroot', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ number: input })
+        });
 
-            if (isNaN(number) || number < 0 || number > 9999) {
-                resultDiv.innerText = "Please enter a valid number between 0 and 9999.";
-                return;
-            }
+        const data = await res.json();
 
-            try {
-                const response = await fetch(https://abhiram-38oh.onrender.com/digit-root?number=' + input, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ number })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    resultDiv.innerText = `Digit Root: ${data.result}`;
-                    stepsDiv.innerHTML = "Steps:<br>" + data.steps.map((step, i) => `Step ${i + 1}: [${step.join(" + ")}] = ${step.reduce((a, b) => a + b)}`).join("<br>");
-                } else {
-                    resultDiv.innerText = data.error;
-                }
-            } catch (err) {
-                resultDiv.innerText = "Error connecting to the server.";
-            }
+        if (res.ok) {
+          resultBox.innerHTML = `
+            <p><strong>Input:</strong> ${input}</p>
+            <p><strong>Steps:</strong> ${data.steps.join(' → ')}</p>
+            <p><strong>Digit Root:</strong> ${data.digit_root}</p>
+          `;
+        } else {
+          resultBox.innerHTML = `<p class="error">Error: ${data.error}</p>`;
         }
-    </script>
+
+      } catch (err) {
+        resultBox.innerHTML = `<p class="error">Server error. Please try again later.</p>`;
+      }
+    }
+  </script>
 </body>
 </html>
