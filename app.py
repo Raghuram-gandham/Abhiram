@@ -4,26 +4,29 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-def digit_root_steps(n):
-    steps = []
+def digit_root(n):
     while n >= 10:
-        digits = [int(d) for d in str(n)]
-        n = sum(digits)
-        steps.append(n)
-    return steps, n
+        n = sum([int(d) for d in str(n)])
+    return n
 
 @app.route("/digitroot", methods=["POST"])
-def get_digit_root():
+def get_matching_numbers():
     data = request.get_json()
     try:
-        number = int(data["number"])
-        if number > 9999:
-            return jsonify({"error": "Number must be 9999 or less"}), 400
-        steps, root = digit_root_steps(number)
-        return jsonify({"steps": steps, "digit_root": root})
+        target_root = int(data["number"])
+        if not (1 <= target_root <= 9):
+            return jsonify({"error": "Digit root must be between 1 and 9"}), 400
+
+        matches = [i for i in range(1, 10000) if digit_root(i) == target_root]
+        return jsonify({
+            "digit_root": target_root,
+            "matches": matches,
+            "count": len(matches)
+        })
+
     except:
         return jsonify({"error": "Invalid input"}), 400
 
 @app.route("/", methods=["GET"])
 def home():
-    return "Digit Root API is running!"
+    return "Digit Root Matcher API is running!"
