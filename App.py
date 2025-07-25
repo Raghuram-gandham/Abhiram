@@ -1,24 +1,20 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import os
 
 app = Flask(__name__)
-CORS(app)
+CORS(app)  # Enables CORS
 
-def digit_root(n):
-    while n >= 10:
-        n = sum(int(d) for d in str(n))
-    return n
-
-@app.route('/get_numbers', methods=['POST'])
-def get_numbers():
+@app.route('/digit-root', methods=['POST'])
+def digit_root():
     data = request.get_json()
-    target_root = int(data['digit_root'])
-
-    result = [i for i in range(1, 10000) if digit_root(i) == target_root]
-    return jsonify({
-        'digit_root': target_root,
-        'numbers': result
-    })
+    number = int(data.get('number'))
+    steps = []
+    while number >= 10:
+        number = sum(int(d) for d in str(number))
+        steps.append(number)
+    return jsonify({'digit_root': number, 'steps': steps})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
