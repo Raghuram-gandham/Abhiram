@@ -1,85 +1,80 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Digit Root Calculator - Abhiram</title>
+  <title>Abhiram - Digit Root Matcher</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 2rem;
-      background: #f4f4f4;
-      color: #333;
-      max-width: 600px;
-      margin: auto;
-    }
-    h1 {
       text-align: center;
+      padding: 30px;
+      background-color: #f0f0f0;
     }
-    input[type="number"] {
-      width: 100%;
-      padding: 0.5rem;
-      font-size: 1rem;
-      margin-bottom: 1rem;
+
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      font-size: 16px;
     }
-    button {
-      padding: 0.6rem 1rem;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
+
     .result {
-      margin-top: 2rem;
-      padding: 1rem;
-      background: white;
-      border-radius: 5px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      margin-top: 20px;
+      background: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #ccc;
     }
-    .error {
-      color: red;
+
+    .matches {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 10px;
+      text-align: left;
+      padding: 10px;
+      border: 1px solid #ccc;
     }
   </style>
 </head>
 <body>
-  <h1>Digit Root Calculator</h1>
-  <input type="number" id="numberInput" placeholder="Enter a number (max: 9999)" max="9999" />
-  <button onclick="calculate()">Calculate</button>
-  <div class="result" id="resultBox"></div>
+  <h1>Abhiram - Digit Root Matcher</h1>
+  <input type="number" id="digitRootInput" placeholder="Enter a digit root (1-9)" min="1" max="9">
+  <button onclick="getMatches()">Find Numbers</button>
+
+  <div class="result" id="resultBox" style="display:none;">
+    <h2>Results</h2>
+    <p><strong>Digit Root:</strong> <span id="rootOutput"></span></p>
+    <p><strong>Count:</strong> <span id="countOutput"></span></p>
+    <div class="matches" id="matchesOutput"></div>
+  </div>
 
   <script>
-    async function calculate() {
-      const input = document.getElementById('numberInput').value;
-      const resultBox = document.getElementById('resultBox');
-      resultBox.innerHTML = "Calculating...";
+    async function getMatches() {
+      const input = document.getElementById("digitRootInput").value;
+      const resultBox = document.getElementById("resultBox");
+      const rootOutput = document.getElementById("rootOutput");
+      const countOutput = document.getElementById("countOutput");
+      const matchesOutput = document.getElementById("matchesOutput");
+
+      resultBox.style.display = "none";
 
       try {
-        const res = await fetch('https://abhiram-38oh.onrender.com/digitroot', {
-          method: 'POST',
+        const res = await fetch("https://abhiram-38oh.onrender.com/digitroot", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json"
           },
           body: JSON.stringify({ number: input })
         });
 
+        if (!res.ok) throw new Error("Server error");
+
         const data = await res.json();
-
-        if (res.ok) {
-          resultBox.innerHTML = `
-            <p><strong>Input:</strong> ${input}</p>
-            <p><strong>Steps:</strong> ${data.steps.join(' → ')}</p>
-            <p><strong>Digit Root:</strong> ${data.digit_root}</p>
-          `;
-        } else {
-          resultBox.innerHTML = `<p class="error">Error: ${data.error}</p>`;
-        }
-
+        rootOutput.textContent = data.digit_root;
+        countOutput.textContent = data.count;
+        matchesOutput.textContent = data.matches.join(", ");
+        resultBox.style.display = "block";
       } catch (err) {
-        resultBox.innerHTML = `<p class="error">Server error. Please try again later.</p>`;
+        alert("Server error. Please try again later.");
+        console.error(err);
       }
     }
   </script>
